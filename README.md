@@ -1,4 +1,4 @@
-# 2022
+# 2023
 
 Kof's sketchbook year 2023, sketches are build with [Processing](http://processing.org) software.
 
@@ -47,7 +47,7 @@ git@github.com:K0F/$i.git ; done
 
 *Enjoy, and feel free to recycle!*
 
-*electronic gods be with you*
+*light be with you*
 
 *-- kof*
 
