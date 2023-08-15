@@ -4,7 +4,10 @@ import processing.serial.*;
 Serial myPort;
 
 // 1 step = 11.1111um
-int len = 2500;
+int len = 3600;
+int mag;
+int interval = 60;
+
 int speedx = 24;
 int speedy = 24;
 float atx, aty, btx, bty, alen, blen;
@@ -24,12 +27,12 @@ boolean ready = true;
 void draw(){
   background(255);
 
-  len = int(noise(frameCount/25)*1000);
+  mag = int(noise(frameCount/600.0)*len);
 
   while (myPort.available() > 0) {
     String inBuffer = myPort.readString();
     if (inBuffer != null) {
-      if(inBuffer.trim().equals("B ready") && !ready){
+      if(inBuffer.trim().equals("B ready") || inBuffer.trim().equals("A ready") && !ready){
         ready = true;
         println("OK");
         }
@@ -37,8 +40,8 @@ void draw(){
     }
   }
 
-  atx = noise(millis()/100.0,0) * len;
-  aty = noise(0,millis()/100.0) * len;
+  atx = noise(millis()/1000.0,0) * mag;
+  aty = noise(0,millis()/1000.0) * mag;
   
   btx = width - atx;
   bty = aty;
@@ -49,13 +52,17 @@ void draw(){
   float beta = atan(bty/btx);
   blen = (cos(beta) * btx);
 
-  if(frameCount%240==0){
+  if(frameCount%interval==0){
+
+if(alen<0)
     myPort.write("x");
-    //myPort.write("y");
-  }
-	if(frameCount%5==0){
-    move(int(blen),int(alen));
+    if(blen<0)
+    myPort.write("y");
+
+      move(int(blen),int(alen));
+
 	}
+	
   stroke(0);
 
 }
