@@ -4,14 +4,14 @@ import processing.serial.*;
 Serial myPort;
 
 // 1 step = 11.1111um
-int len = 5000;
-int speedx = 64;
-int speedy = 64;
+int len = 2500;
+int speedx = 24;
+int speedy = 24;
 float atx, aty, btx, bty, alen, blen;
 
 void setup(){
-  size(420,594);
-  frameRate(25);
+  size(420,594,P2D);
+  frameRate(60);
   // List all the available serial ports:
   printArray(Serial.list());
   // Open the port you are using at the rate you want:
@@ -24,6 +24,8 @@ boolean ready = true;
 void draw(){
   background(255);
 
+  len = int(noise(frameCount/25)*1000);
+
   while (myPort.available() > 0) {
     String inBuffer = myPort.readString();
     if (inBuffer != null) {
@@ -35,8 +37,8 @@ void draw(){
     }
   }
 
-  atx = random(0,width);
-  aty = random(0,width);
+  atx = noise(millis()/100.0,0) * len;
+  aty = noise(0,millis()/100.0) * len;
   
   btx = width - atx;
   bty = aty;
@@ -47,26 +49,29 @@ void draw(){
   float beta = atan(bty/btx);
   blen = (cos(beta) * btx);
 
-  if(frameCount%25==0){
-    move(int(blen),int(alen));
+  if(frameCount%240==0){
     myPort.write("x");
-    myPort.write("y");
+    //myPort.write("y");
   }
-
+	if(frameCount%5==0){
+    move(int(blen),int(alen));
+	}
   stroke(0);
 
 }
 
 
 void move(int _x, int _y){
-  myPort.write("X00064Y00064A"+nf(_x,5)+"B"+nf(_y,5));
+  myPort.write("X"+nf(speedx,5)+"Y"+nf(speedy,5)+"A"+nf(_x,5)+"B"+nf(_y,5));
   ready = false;
 }
 
+/*
 void send(){
-  myPort.write("X00064Y00064A"+nf(int(alen),5)+"B"+nf(int(blen),5));
+  myPort.write("X"+nf(speedx,5)+"Y"+nf(speedy,5)+"A"+nf(_x,5)+"B"+nf(_y,5));
   ready = false;
 }
+*/
 
 void keyPressed(){
   if(key=='x'){
