@@ -5,7 +5,7 @@ Serial myPort;
 
 // 1 step = 11.1111um
 int len = 18900;
-int mag = 1200;
+int mag = 1200/2;
 int interval = 15;
 
 int speedx = 32;
