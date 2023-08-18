@@ -4,16 +4,16 @@ import processing.serial.*;
 Serial myPort;
 
 // 1 step = 11.1111um
-int len = 24;
-int mag;
-int interval = 30;
+int len = 18900;
+int mag = 1200;
+int interval = 15;
 
-int speedx = 720;
-int speedy = 720;
+int speedx = 32;
+int speedy = 32;
 float atx, aty, btx, bty, alen, blen, prevAlen, prevBlen;
 
 void setup(){
-  size(400,400,P2D);
+  size(210*2,297*2,P2D);
   frameRate(120);
   // List all the available serial ports:
   printArray(Serial.list());
@@ -23,6 +23,10 @@ void setup(){
   move(10,10);
   
   noiseSeed(2023);
+  
+  
+  alen = map(dist(0,0,-width*1.5,-height*1.5),0,width,0,len);
+  blen = map(dist(0,0,width*1.5+width,-height*1.5),0,width,0,len);
 }
 
 
@@ -32,9 +36,9 @@ boolean aready, bready;
 void draw(){
   background(255);
 
-  mag = int(noise(frameCount/1200.0)*len);
+  //mag = int(noise(frameCount/1200.0)*len);
 
-  //while (myPort.available() > 0) {
+  while (myPort.available() > 0) {
     String inBuffer = myPort.readString();
     if (inBuffer != null) {
       if(inBuffer.trim().equals("A ready") && !aready){
@@ -58,53 +62,59 @@ void draw(){
         };
         
         
-      //println(inBuffer);
-    //}
+      println(inBuffer);
+    }
   
+  if(frameCount%interval==0){
+        gotoxy((sin(frameCount/1200.0*TAU))*mag,(cos(frameCount/1200.0*TAU))*mag);
+  }
+  
+  
+  /*
+  if(frameCount%(interval*100)==0){
+        gotoxy(width/2,height/2);
+  }
+  */
+  
+  //line(atx,aty,)
 
-  atx = mouseX-width/2;
-  aty = mouseY-height/2;
-  btx = width/2 - atx;//(noise(0,millis()/1000.0,0)-0.5) * mag;
-  bty = height/2 - aty;//(noise(0,0,millis()/1000.0)-0.5) * mag;
+}
 
 
-  float alpha = atan(aty/atx);
-  alen = (cos(alpha) * atx);
-
-  float beta = atan(bty/btx);
-  blen = (sin(beta) * btx);
-
+void gotoxy(float _x, float _y){
     
-    if(frameCount%(interval)==0){
-  if(atx<0 || btx<0)
-  myPort.write("x");
-  if(aty<0 || bty<0)
+  
+  prevAlen = alen;
+  prevBlen = blen;
+
+
+  float tx = _x;
+  float ty = _y; 
+
+
+  
+  alen = map(dist(tx,ty,-width*1.5,-height*1.5),0,width,0,len);
+  blen = map(dist(tx,ty,width*1.5+width,-height*1.5),0,width,0,len);
+  
+  //speedx = int(constrain(blen/alen,2,120));
+ // speedy = int(constrain(alen/blen,2,120))    ;
+  
+  if(alen-prevAlen>0){
   myPort.write("y");
-      move(int(abs(blen)),int(abs(alen)));
   
+  }else if(alen-prevAlen<0){
+  myPort.write("u");
+}
   
-    //if(alen < 0)
-  //  myPort.write("x");
-   // moveX(int(alen));
-    //if(blen < 0)
-    
-   // myPort.write("y");
-   // moveY(int(blen));
+  if(blen-prevBlen>0){
+  myPort.write("c");
+}else if(blen-prevBlen<0){
+  myPort.write("x");
 }
-    
-    
-    /*
-  if(frameCount%(interval)==0){
-      move(int(abs(blen)),int(abs(alen)));
-      //move(10,100);
-}
-* */
-    //ready = false;
-
-	
-	
-  stroke(0);
-
+  
+  println(int(alen-prevAlen)+", "+int(blen-prevBlen));
+  move(int(abs(alen-prevAlen)),int(abs(blen-prevBlen)));
+  
 }
 
 
@@ -119,7 +129,7 @@ void moveY(int _y){
 }
 
 void move(int _x, int _y){
-  myPort.write("X"+nf(_x,5)+"Y"+nf(_y,5)+"A"+nf(speedx,5)+"B"+nf(speedy,5));
+  myPort.write("X"+nf(speedx,5)+"Y"+nf(speedy,5)+"A"+nf(_x,5)+"B"+nf(_y,5));
   //ready = false;
 }
 
