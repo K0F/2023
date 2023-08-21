@@ -4,12 +4,12 @@ import processing.serial.*;
 Serial myPort;
 
 // 1 step = 11.1111um
-int len = 18900;
-int mag = 1200/2;
-int interval = 15;
+int len = 18900/21;
+int mag = 1000;
+int interval = 12;
 
-int speedx = 32;
-int speedy = 32;
+int speedx = 16;
+int speedy = 16;
 float atx, aty, btx, bty, alen, blen, prevAlen, prevBlen;
 
 void setup(){
@@ -26,11 +26,12 @@ void setup(){
   
   
   alen = map(dist(0,0,-width*1.5,-height*1.5),0,width,0,len);
-  blen = map(dist(0,0,width*1.5+width,-height*1.5),0,width,0,len);
+  blen = map(dist(0,0,width*1.5,-height*1.5),0,width,0,len);
 }
 
 
 boolean ready = true;
+boolean pause = false;
 boolean aready, bready;
 
 void draw(){
@@ -65,8 +66,8 @@ void draw(){
       println(inBuffer);
     }
   
-  if(frameCount%interval==0){
-        gotoxy((sin(frameCount/1200.0*TAU))*mag,(cos(frameCount/1200.0*TAU))*mag);
+  if(frameCount%interval==0 && !pause){
+        gotoxy((sin(frameCount/120.0*TAU))*mag,(cos(frameCount/120.0*TAU))*mag);
   }
   
   
@@ -94,26 +95,26 @@ void gotoxy(float _x, float _y){
 
   
   alen = map(dist(tx,ty,-width*1.5,-height*1.5),0,width,0,len);
-  blen = map(dist(tx,ty,width*1.5+width,-height*1.5),0,width,0,len);
+  blen = map(dist(tx,ty,width*1.5,-height*1.5),0,width,0,len);
   
   //speedx = int(constrain(blen/alen,2,120));
  // speedy = int(constrain(alen/blen,2,120))    ;
   
   if(alen-prevAlen>0){
-  myPort.write("y");
+  myPort.write("x");
   
   }else if(alen-prevAlen<0){
-  myPort.write("u");
+  myPort.write("c");
 }
   
   if(blen-prevBlen>0){
-  myPort.write("c");
+  myPort.write("y");
 }else if(blen-prevBlen<0){
-  myPort.write("x");
+  myPort.write("u");
 }
-  
+  delay(2);
   println(int(alen-prevAlen)+", "+int(blen-prevBlen));
-  move(int(abs(alen-prevAlen)),int(abs(blen-prevBlen)));
+  move(int(abs(alen)),int(abs(blen)));
   
 }
 
@@ -141,15 +142,24 @@ void send(){
 */
 
 void keyPressed(){
-  if(key=='x'){
-    myPort.write("x");
+  if(keyCode==LEFT){
+    gotoxy(-100,0);
   }
-
-  if(key=='y'){
-    myPort.write("y");
+  if(keyCode==RIGHT){
+    gotoxy(100,0);
   }
-
+  if(keyCode==UP){
+    gotoxy(0,-100);
+  }
+  if(keyCode==DOWN){
+    
+    gotoxy(0,100);
+  }
+  
   if(keyCode==ENTER){
-    myPort.write("s");
+    pause=!pause;
   }
+  
+  
+
 }
