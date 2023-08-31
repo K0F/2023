@@ -4,12 +4,12 @@ import processing.serial.*;
 Serial myPort;
 
 // 1 step = 11.1111um
-int len = 18900/21;
-int mag = 1000;
-int interval = 12;
+int len = 3000;
+int mag = 3000;
+int interval = 7;
 
-int speedx = 16;
-int speedy = 16;
+int speedx = 4;
+int speedy = 4;
 float atx, aty, btx, bty, alen, blen, prevAlen, prevBlen;
 
 void setup(){
@@ -67,7 +67,7 @@ void draw(){
     }
   
   if(frameCount%interval==0 && !pause){
-        gotoxy((sin(frameCount/120.0*TAU))*mag,(cos(frameCount/120.0*TAU))*mag);
+        gotoxy((cos(frameCount/1200.0*TAU))*mag,(sin(frameCount/1200.0*TAU))*mag);
   }
   
   
@@ -97,8 +97,8 @@ void gotoxy(float _x, float _y){
   alen = map(dist(tx,ty,-width*1.5,-height*1.5),0,width,0,len);
   blen = map(dist(tx,ty,width*1.5,-height*1.5),0,width,0,len);
   
-  //speedx = int(constrain(blen/alen,2,120));
- // speedy = int(constrain(alen/blen,2,120))    ;
+  speedx = int(constrain(abs(blen/alen),4,120));
+  speedy = int(constrain(abs(alen/blen),4,120));
   
   if(alen-prevAlen>0){
   myPort.write("x");
@@ -114,7 +114,46 @@ void gotoxy(float _x, float _y){
 }
   delay(2);
   println(int(alen-prevAlen)+", "+int(blen-prevBlen));
-  move(int(abs(alen)),int(abs(blen)));
+  move(int(abs(blen-prevBlen)),int(abs(alen-prevAlen)));
+  
+}
+
+
+void xy(float _x, float _y){
+    
+  
+  prevAlen = alen;
+  prevBlen = blen;
+
+
+  float tx = _x;
+  float ty = _y; 
+
+
+  
+  alen = map(dist(tx,ty,-width*1.5,-height*1.5),0,width,0,len);
+  blen = map(dist(tx,ty,width*1.5,-height*1.5),0,width,0,len);
+  
+  
+  
+  speedx = int(constrain(abs(blen/alen),4,120));
+  speedy = int(constrain(abs(alen/blen),4,120));
+  
+  if(alen-prevAlen>0){
+  myPort.write("x");
+  
+  }else if(alen-prevAlen<0){
+  myPort.write("c");
+}
+  
+  if(blen-prevBlen>0){
+  myPort.write("y");
+}else if(blen-prevBlen<0){
+  myPort.write("u");
+}
+  delay(2);
+  //println(int(alen-prevAlen)+", "+int(blen-prevBlen));
+  move(int(abs(blen)),int(abs(alen)));
   
 }
 
@@ -143,17 +182,16 @@ void send(){
 
 void keyPressed(){
   if(keyCode==LEFT){
-    gotoxy(-100,0);
+    xy(-100,0);
   }
   if(keyCode==RIGHT){
-    gotoxy(100,0);
+    xy(100,0);
   }
   if(keyCode==UP){
-    gotoxy(0,-100);
+    xy(0,-100);
   }
   if(keyCode==DOWN){
-    
-    gotoxy(0,100);
+    xy(0,100);
   }
   
   if(keyCode==ENTER){
