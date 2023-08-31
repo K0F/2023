@@ -9,7 +9,7 @@ float AMP = 100.0;
 ArrayList states;
 int trailLen = 1000;
 float ZOOM = 5.0;
-
+float learnRate = 9000.0;
 ////
 
 float correction = -180.0+360.0;
@@ -50,7 +50,16 @@ void draw(){
 	translate(width/2+width/4,height/2);
 	for(int i = 0 ; i< R.size();i++){
 		Neuron tmp = (Neuron)R.get(i);
+		Neuron pair = (Neuron)L.get(i);
+		Neuron neigh = (Neuron)L.get( ((i+L.size())-1) % L.size());
 		float amp = tmp.getSum() * AMP;
+
+
+		tmp.harmonize();
+		//tmp.align(pair);
+		//tmp.align(neigh);
+        //tmp.slowDown();
+
 		point(i,amp);
 		X+=amp;
 	}
@@ -64,14 +73,22 @@ void draw(){
 
 	for(int i = 0 ; i< L.size();i++){
 		Neuron tmp = (Neuron)L.get(i);
+		Neuron pair = (Neuron)R.get(i);
+		Neuron neigh = (Neuron)L.get( ((i+L.size())-1) % L.size());
 		float amp = tmp.getSum() * AMP;
+
+		tmp.harmonize();
+		//tmp.align(pair);
+		//tmp.align(neigh);
+		//tmp.slowDown();
+
 		point(i,amp);
 		Y+=amp;
 	}
 	Y/=(L.size()+0.0);
 	popMatrix();
 
-	states.add(new PVector(X*ZOOM,Y*ZOOM));
+	states.add(new PVector(Y*ZOOM,X*ZOOM));
 	
 	if(states.size()>trailLen)
 	states.remove(0);
@@ -105,6 +122,30 @@ class Neuron{
 	float getSum(){
 		return sin(millis()/1000.0*TAU*freq)*mag;
 	}
+
+	void slowDown(){
+		mag *= 1.0001;
+		freq *= 0.9998;
+	}
+
+	// 1..12 is one octave, originals made here
+	void harmonize(){
+		freq += ((freq*(2^((8/12))+1)) - freq)/learnRate;
+	}
+
+	void align(Neuron _n){
+		mag += ((_n.mag-mag)/learnRate);
+		freq += ((_n.freq-freq)/learnRate);
+		_n.mag -= ((mag-_n.mag)/learnRate);
+		_n.freq -= ((freq-_n.freq)/learnRate);
+	}
+
+	
+	void delign(Neuron _n){
+		mag -= ((_n.mag-mag)/learnRate);
+		freq -= ((_n.freq-freq)/learnRate);
+	}
+	
 }
 
 void savePoints(){
