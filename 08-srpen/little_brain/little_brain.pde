@@ -4,15 +4,18 @@
 
 ArrayList R,L;
 int side = 3;
-float offset = 100.0;
+float offset = 10.0;
 float AMP = 100.0;
 ArrayList states;
-int trailLen = 1000;
+int trailLen = 500;
 float ZOOM = 5.0;
-float learnRate = 9000.0;
+float learnRate = 1200000.0;
 ////
 
+// angle correction
 float correction = -180.0+360.0;
+// mgnitude correction
+float scalar = 30.0;
 
 ////
 
@@ -104,7 +107,7 @@ void draw(){
 	endShape();
 	popMatrix();
 
-	if(frameCount%1000==0){
+	if(frameCount%trailLen==0){
 		background(255);
 		savePoints();
 
@@ -124,13 +127,13 @@ class Neuron{
 	}
 
 	void slowDown(){
-		mag *= 1.0001;
+		mag *= 1.0;
 		freq *= 0.9998;
 	}
 
 	// 1..12 is one octave, originals made here
 	void harmonize(){
-		freq += ((freq*(2^((8/12))+1)) - freq)/learnRate;
+		freq += ((freq*(2^(((frameCount%12)/12))+1)) - freq)/learnRate;
 	}
 
 	void align(Neuron _n){
@@ -156,7 +159,7 @@ void savePoints(){
    float mag = dist(tmp1.x,(tmp1.y),tmp2.x,(tmp2.y));
    float angle = atan2((tmp2.y)-(tmp1.y),(tmp2.x)-(tmp1.x));
    output = expand(output,output.length+1);
-   output[output.length-1] = int(degrees(angle+correction))+" "+int(mag);
+   output[output.length-1] = int(degrees(angle)+correction)+" "+int(mag*scalar);
   }
   
   saveStrings("drawing.txt",output);
