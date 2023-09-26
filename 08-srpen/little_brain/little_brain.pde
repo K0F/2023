@@ -7,21 +7,23 @@ int side = 3;
 float offset = 10.0;
 float AMP = 100.0;
 ArrayList states;
-int trailLen = 500;
+int trailLen = 5000;
 float ZOOM = 5.0;
-float learnRate = 1200000.0;
+float learnRate = 1200.0;
+int harmonic = 8;
 ////
 
 // angle correction
 float correction = -180.0+360.0;
 // mgnitude correction
-float scalar = 30.0;
+float scalar = 150.0;
 
+float base = 1.02;
 ////
 
 
 void setup(){
-	size(640,480);
+	size(640,480,P2D);
 
 
 	noiseSeed(2023);
@@ -59,6 +61,7 @@ void draw(){
 
 
 		tmp.harmonize();
+		pair.harmonize();
 		//tmp.align(pair);
 		//tmp.align(neigh);
         //tmp.slowDown();
@@ -80,7 +83,7 @@ void draw(){
 		Neuron neigh = (Neuron)L.get( ((i+L.size())-1) % L.size());
 		float amp = tmp.getSum() * AMP;
 
-		tmp.harmonize();
+		//tmp.harmonize();
 		//tmp.align(pair);
 		//tmp.align(neigh);
 		//tmp.slowDown();
@@ -88,6 +91,7 @@ void draw(){
 		point(i,amp);
 		Y+=amp;
 	}
+	
 	Y/=(L.size()+0.0);
 	popMatrix();
 
@@ -97,6 +101,7 @@ void draw(){
 	states.remove(0);
 
 	noFill();
+stroke(255,15);
 	pushMatrix();
 	translate(width/2,height/2);
 	beginShape();
@@ -110,7 +115,6 @@ void draw(){
 	if(frameCount%trailLen==0){
 		background(255);
 		savePoints();
-
 	}
 	
 }
@@ -133,14 +137,13 @@ class Neuron{
 
 	// 1..12 is one octave, originals made here
 	void harmonize(){
-		freq += ((freq*(2^(((frameCount%12)/12))+1)) - freq)/learnRate;
+		freq += ((base*(2^((harmonic/12))+1)) - freq)/learnRate;
+		freq += random(-100,100)/10000.0/learnRate;
 	}
 
 	void align(Neuron _n){
 		mag += ((_n.mag-mag)/learnRate);
 		freq += ((_n.freq-freq)/learnRate);
-		_n.mag -= ((mag-_n.mag)/learnRate);
-		_n.freq -= ((freq-_n.freq)/learnRate);
 	}
 
 	
@@ -155,11 +158,11 @@ void savePoints(){
    String output[] = new String[0];
    for(int i = 1;i<states.size();i++){
    PVector tmp1 = (PVector)states.get(i-1);
-   PVector tmp2 = (PVector)states.get(i);
-   float mag = dist(tmp1.x,(tmp1.y),tmp2.x,(tmp2.y));
-   float angle = atan2((tmp2.y)-(tmp1.y),(tmp2.x)-(tmp1.x));
+   //PVector tmp2 = (PVector)states.get(i);
+   //float mag = dist(tmp1.x,(tmp1.y),tmp2.x,(tmp2.y));
+   //float angle = atan2((tmp2.y)-(tmp1.y),(tmp2.x)-(tmp1.x));
    output = expand(output,output.length+1);
-   output[output.length-1] = int(degrees(angle)+correction)+" "+int(mag*scalar);
+   output[output.length-1] = int(tmp1.x*scalar+width/2)+" "+int(tmp1.y*scalar+height/2);//int(degrees(angle)+correction)+" "+int(mag*scalar);
   }
   
   saveStrings("drawing.txt",output);
