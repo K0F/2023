@@ -80,7 +80,7 @@ void draw() {
     //if (movementSum > 0) {
       opencv.loadImage(cam);
   opencv.gray();
-  opencv.threshold(128);
+  opencv.threshold(threshold);
   PImage dst = opencv.getOutput();
 
 
@@ -102,7 +102,7 @@ background(0);
       
       if(save){
        output = expand(output,output.length+1);
-   output[output.length-1] = int((point.x/1.5)*scalar)+" "+int((point.y)*scalar);
+   output[output.length-1] = int(((width-point.x/1.49125))*scalar)+" "+int((height-point.y)*scalar);
       }
     }
     endShape();
@@ -112,9 +112,9 @@ background(0);
     
   }
   if(save){
-    
-    saveStrings("drawing.txt",output);
-
+    String fn = nf(year(),4)+nf(month(),2)+nf(day(),2)+"_"+nf(hour(),2)+nf(minute(),2)+nf(second(),2)+"_"+nf(frameCount,8); 
+    saveStrings(fn+".txt",output);
+	cam.save(fn+".png");
   save = false;
   }
       
@@ -127,6 +127,20 @@ background(0);
   //image(cam, 0, 0, width, height);
 }
 
+int threshold= 128;
+
 void keyPressed(){
+if(key==' '){
   save = true;
+  }
+
+  if(keyCode == UP){
+  	threshold++;
+  	threshold=constrain(threshold,1,255);
+  }
+  
+  if(keyCode == DOWN){
+  	threshold--;
+  	threshold=constrain(threshold,1,255);
+  }
 }
